@@ -1,0 +1,32 @@
+<div
+    class="relative flex h-full flex-col overflow-hidden rounded-3xl border border-gray-300 dark:border-gray-700 shadow-lg">
+    <div class="p-6">
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Additional Information</h3>
+        <div class="mt-4 grid grid-cols-3 gap-4">
+            <div class="p-3 bg-blue-50 rounded-lg dark:bg-blue-900">
+                <h4 class="text-sm font-medium text-blue-900 dark:text-blue-100">
+                    Current Level
+                </h4>
+                <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    {{ currentValue }}%
+                </p>
+            </div>
+            <div class="p-3 bg-green-50 rounded-lg dark:bg-green-900">
+                <h4 class="text-sm font-medium text-green-900 dark:text-green-100">
+                    Average
+                </h4>
+                <p class="text-2xl font-bold text-green-900 dark:text-green-100">
+                    {{ averageValue }}%
+                </p>
+            </div>
+            <div class="p-3 bg-purple-50 rounded-lg dark:bg-purple-900">
+                <h4 class="text-sm font-medium text-purple-900 dark:text-purple-100">
+                    Last Update
+                </h4>
+                <p class="text-sm font-bold text-purple-900 dark:text-purple-100">
+                    {{ lastUpdate }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
