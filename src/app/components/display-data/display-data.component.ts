@@ -1,126 +1,46 @@
-import {
-  Component,
-  OnInit,
-  ViewChild,
-  CUSTOM_ELEMENTS_SCHEMA,
-} from '@angular/core';
+import { Component, OnInit, ViewChild, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { Database, ref, onValue } from '@angular/fire/database';
-import {
-  ApexAxisChartSeries,
-  ApexChart,
-  ApexXAxis,
-  ApexDataLabels,
-  ApexStroke,
-  ApexYAxis,
-  ApexTitleSubtitle,
-  ApexLegend,
-  ApexFill,
-  ApexTooltip,
-  ChartComponent,
-  NgApexchartsModule,
-} from 'ng-apexcharts';
 import { initFlowbite } from 'flowbite';
 
-export type ChartOptions = {
-  series: ApexAxisChartSeries;
-  chart: ApexChart;
-  xaxis: ApexXAxis;
-  stroke: ApexStroke;
-  dataLabels: ApexDataLabels;
-  yaxis: ApexYAxis;
-  title: ApexTitleSubtitle;
-  labels: string[];
-  legend: ApexLegend;
-  fill: ApexFill;
-  tooltip: ApexTooltip;
-};
+import { HistoryTableComponent } from '../history-table/history-table.component';
+import { ThemeSwitcherComponent } from '../theme-switcher/theme-switcher.component';
+import { InfoCardsComponent } from '../info-cards/info-cards.component';
+import { SoilMoistureChartComponent } from '../soil-moisture-chart/soil-moisture-chart.component';
+import { PumpActivationsChartComponent } from '../pump-activations-chart/pump-activations-chart.component';
+
 
 @Component({
   selector: 'app-display-data',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule],
+  imports: [CommonModule,
+    HistoryTableComponent,
+    SoilMoistureChartComponent,
+    ThemeSwitcherComponent,
+    PumpActivationsChartComponent,
+    InfoCardsComponent,
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './display-data.component.html',
 })
 export class DisplayDataComponent implements OnInit {
-  @ViewChild('chart') chart!: ChartComponent;
-  public chartOptions: ChartOptions;
-  public currentValue: number = 0;
-  public averageValue: number = 0;
-  public lastUpdate: string = '';
-  public pumpActivations: number = 0;
-  public pumpHistory: any[] = [];
+  // public pumpActivations: number = 0;
+
+  public chartData: any[] = [];
+  public pumpHistory: { timestamp: number; soilMoisture: number; pumpStatus: boolean }[] = [];
+  public stats: { currentValue: number, averageValue: number, lastUpdate: string } = {
+    currentValue: 0,
+    averageValue: 0,
+    lastUpdate: ''
+  };
+  public pumpData: { totalRecords: number, pumpActivations: number } = { 
+    totalRecords: 0,
+    pumpActivations: 0
+  };
   public themeMode: 'light' | 'dark' | 'system' = 'system';
 
-  constructor(private database: Database) {
-    this.chartOptions = {
-      series: [
-        {
-          name: 'Moisture Level',
-          data: [],
-        },
-      ],
-      chart: {
-        height: '300',
-        type: 'area',
-        fontFamily: 'Inter, sans-serif',
-        dropShadow: {
-          enabled: false,
-        },
-        toolbar: {
-          show: false,
-        },
-      },
-      tooltip: {
-        x: {
-          format: 'dd MMM yyyy HH:mm',
-        },
-      },
-      fill: {
-        type: 'gradient',
-        gradient: {
-          opacityFrom: 0.55,
-          opacityTo: 0,
-          shade: '#1C64F2',
-          gradientToColors: ['#1C64F2'],
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      stroke: {
-        curve: 'monotoneCubic',
-        width: 4,
-      },
-      title: {
-        text: 'Soil Moisture Trends',
-        align: 'left',
-      },
-      labels: [],
-      legend: {
-        show: true,
-      },
-      xaxis: {
-        type: 'datetime',
-        labels: {
-          datetimeFormatter: {
-            year: 'yyyy',
-            month: 'MMM  yy',
-            day: 'dd MMM',
-            hour: 'HH:mm',
-          },
-        },
-      },
-      yaxis: {
-        title: {
-          text: 'Moisture Level (%)',
-        },
-        min: 0,
-        max: 100,
-      },
-    };
-  }
+  constructor(private database: Database) {}
 
   ngOnInit() {
     
@@ -148,17 +68,26 @@ export class DisplayDataComponent implements OnInit {
       pumpStatus: data[timestamp].pumpStatus
     }));
 
-    const lastRecord = processedData[processedData.length - 1];
-    this.currentValue = lastRecord.soilMoisture;
-    this.lastUpdate = new Date(lastRecord.timestamp * 1000).toLocaleString();
-    this.averageValue = Math.round(
-      processedData.reduce((acc, val) => acc + val.soilMoisture, 0) / processedData.length
-    );
+    if (processedData.length > 0) {
+      this.chartData = processedData.map(record => ({
+        timestamp: record.timestamp,
+        soilMoisture: record.soilMoisture,
+      }));
 
-    this.pumpHistory = processedData.filter(record => record.pumpStatus);
-    this.pumpActivations = this.pumpHistory.length;
+      const lastRecord = processedData[processedData.length - 1];
+      this.stats.currentValue = lastRecord.soilMoisture;
+      this.stats.lastUpdate = new Date(lastRecord.timestamp * 1000).toLocaleString();
+      this.stats.averageValue = Math.round(
+        processedData.reduce((acc, val) => acc + val.soilMoisture, 0) / processedData.length
+      );
+    }
 
-    this.updateChartData(processedData)
+    this.pumpHistory = processedData.filter(record => record.pumpStatus == "ON");
+    console.log(`Parent component:\ntotalRecords ${processedData.length} - pumpActivations ${this.pumpHistory.length}`);
+    this.pumpData = {
+      totalRecords: processedData.length,
+      pumpActivations: this.pumpHistory.length,
+    };
   }
 
   private getMoisturePercentage(rawValue: number): number {
@@ -169,26 +98,12 @@ export class DisplayDataComponent implements OnInit {
     return Math.max(0, Math.min(100, Math.round(percentage)));
   }
 
-  private updateChartData(data: any[]) {
-    const seriesData = data.map(record => ({
-      x: new Date(record.timestamp * 1000),
-      y: record.soilMoisture,
-    }));
-
-    this.chartOptions.series = [
-      {
-        name: 'Moisture Level',
-        data: seriesData,
-      },
-    ];
-  }
-
   toggleTheme(mode: 'light' | 'dark' | 'system') {
     this.themeMode = mode;
     this.updateTheme();
   }
 
-  private updateTheme() {
+  public updateTheme() {
     const root = document.documentElement;
     if (this.themeMode === 'system') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

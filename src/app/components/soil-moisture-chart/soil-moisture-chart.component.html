@@ -1,0 +1,21 @@
+<div
+    class="relative flex h-full flex-col overflow-hidden rounded-3xl border border-gray-300 dark:border-gray-700 shadow-lg">
+    <div class="p-6">
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">
+            Soil Moisture Chart
+        </h3>
+        <div class="w-full h-full mt-5 flex justify-center items-center">
+            @if (loading) {
+            <div class="spinner-border animate-spin h-8 w-8 border-t-4 border-blue-600 rounded-full"></div>
+            } @else {
+            @if (chartOptions) {
+            <div class="w-full">
+                <apx-chart [series]="chartOptions.series" [chart]="chartOptions.chart" [xaxis]="chartOptions.xaxis"
+                    [stroke]="chartOptions.stroke" [dataLabels]="chartOptions.dataLabels" [yaxis]="chartOptions.yaxis"
+                    [legend]="chartOptions.legend" [fill]="chartOptions.fill" [title]="chartOptions.title"></apx-chart>
+            </div>
+            }
+            }
+        </div>
+    </div>
+</div>

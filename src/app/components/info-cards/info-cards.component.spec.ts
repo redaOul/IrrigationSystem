@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DonutDataComponent } from './donut-data.component';
+import { InfoCardsComponent } from './info-cards.component';
 
-describe('DonutDataComponent', () => {
-  let component: DonutDataComponent;
-  let fixture: ComponentFixture<DonutDataComponent>;
+describe('InfoCardsComponent', () => {
+  let component: InfoCardsComponent;
+  let fixture: ComponentFixture<InfoCardsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DonutDataComponent]
+      imports: [InfoCardsComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(DonutDataComponent);
+    fixture = TestBed.createComponent(InfoCardsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
